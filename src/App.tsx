@@ -5,6 +5,8 @@ import { ChangeEvent, useState } from "react";
 import { BufferGeometry, Object3D } from "three";
 import { IFCLoader } from "web-ifc-three";
 import { IFCModel } from "web-ifc-three/IFC/components/IFCModel";
+import maplibregl from "maplibre-gl";
+import Map from "./components/Map";
 
 function App() {
   const [id, setId] = useState(Number);
@@ -44,6 +46,7 @@ function App() {
 
   return (
     <div className="h-screen w-screen">
+      <Map />
       <ul className="flex bg-slate-600 text-white p-2 ">
         <li>
           <input type="file" name="load" onChange={handleIfcUpload} />
@@ -52,7 +55,7 @@ function App() {
           <p>ID: {id}</p>
         </li>
       </ul>
-      <div className="fixed w-full h-full">
+      <div className="w-full h-full">
         <Canvas
           camera={{ fov: 75, near: 0.1, far: 1000, position: [8, 13, 15] }}
           raycaster={{ firstHitOnly: true }}
