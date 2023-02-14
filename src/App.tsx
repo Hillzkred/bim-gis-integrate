@@ -24,23 +24,23 @@ function App() {
     });
   };
 
-  // const handleIfcClick = (event: ThreeEvent<MouseEvent>) => {
-  //   const index = event.faceIndex as number;
-  //   const ifcObject = event.object as IFCModel;
-  //   const geometry = ifcObject.geometry as BufferGeometry;
-  //   const id = ifc.getExpressId(geometry, index);
-  //   setId(id);
-  //   console.log(id);
-  // };
+  const handleIfcClick = (event: ThreeEvent<MouseEvent>) => {
+    const index = event.faceIndex as number;
+    const ifcObject = event.object as IFCModel;
+    const geometry = ifcObject.geometry as BufferGeometry;
+    const id = ifc.getExpressId(geometry, index);
+    setId(id);
+    console.log(id);
+  };
 
-  // const handlePointerEnter = (event: ThreeEvent<MouseEvent>) => {
-  //   const ifcObject = event.object as IFCModel;
-  //   const modelId = ifcObject.modelID;
+  const handlePointerEnter = (event: ThreeEvent<MouseEvent>) => {
+    const ifcObject = event.object as IFCModel;
+    const modelId = ifcObject.modelID;
 
-  //   const index = event.faceIndex as number;
-  //   const geometry = ifcObject.geometry as BufferGeometry;
-  //   const id = ifc.getExpressId(geometry, index);
-  // };
+    const index = event.faceIndex as number;
+    const geometry = ifcObject.geometry as BufferGeometry;
+    const id = ifc.getExpressId(geometry, index);
+  };
 
   return (
     <div className="h-screen w-screen">
@@ -57,7 +57,7 @@ function App() {
           camera={{ fov: 75, near: 0.1, far: 1000, position: [8, 13, 15] }}
           raycaster={{ firstHitOnly: true }}
         >
-          <Select box multiple>
+          <Select box multiple onClick={handleIfcClick}>
             <mesh>
               <primitive object={ifcModel} />
             </mesh>
