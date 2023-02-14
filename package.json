@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@mapcomponents/react-maplibre": "^0.1.69",
     "@react-three/drei": "^9.56.24",
     "@react-three/fiber": "^8.11.1",
     "@types/node": "^18.13.0",

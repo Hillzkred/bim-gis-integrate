@@ -33,15 +33,6 @@ function App() {
     console.log(id);
   };
 
-  const handlePointerEnter = (event: ThreeEvent<MouseEvent>) => {
-    const ifcObject = event.object as IFCModel;
-    const modelId = ifcObject.modelID;
-
-    const index = event.faceIndex as number;
-    const geometry = ifcObject.geometry as BufferGeometry;
-    const id = ifc.getExpressId(geometry, index);
-  };
-
   return (
     <div className="h-screen w-screen">
       <ul className="flex bg-slate-600 text-white p-2 ">
