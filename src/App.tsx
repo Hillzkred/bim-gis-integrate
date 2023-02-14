@@ -13,7 +13,6 @@ function App() {
 
   const ifcLoader = new IFCLoader();
   const ifc = ifcLoader.ifcManager;
-  ifc.setWasmPath("../public/");
 
   const handleIfcUpload = (event: ChangeEvent<HTMLInputElement>) => {
     const IfcFileFromEvent = event.target.files as FileList;
