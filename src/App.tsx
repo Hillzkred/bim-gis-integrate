@@ -1,8 +1,8 @@
 import { Select } from "@react-three/drei";
-import { OrbitControls } from "@react-three/drei/core";
+import { Line, OrbitControls } from "@react-three/drei/core";
 import { Canvas, ThreeEvent } from "@react-three/fiber";
 import { ChangeEvent, useState } from "react";
-import { BufferGeometry, Object3D } from "three";
+import THREE, { BufferGeometry, Object3D } from "three";
 import { IFCLoader } from "web-ifc-three";
 import { IFCModel } from "web-ifc-three/IFC/components/IFCModel";
 import maplibregl from "maplibre-gl";
@@ -46,7 +46,6 @@ function App() {
 
   return (
     <div className="h-screen w-screen">
-      <Map />
       <ul className="flex bg-slate-600 text-white p-2 ">
         <li>
           <input type="file" name="load" onChange={handleIfcUpload} />
@@ -60,6 +59,7 @@ function App() {
           camera={{ fov: 75, near: 0.1, far: 1000, position: [8, 13, 15] }}
           raycaster={{ firstHitOnly: true }}
         >
+          <Map />
           <Select box multiple onClick={handleIfcClick}>
             <mesh>
               <primitive object={ifcModel} />

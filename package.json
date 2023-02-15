@@ -13,9 +13,11 @@
     "@react-three/fiber": "^8.11.1",
     "@types/node": "^18.13.0",
     "@types/three": "^0.149.0",
+    "mapbox-gl": "npm:empty-npm-package@^1.0.0",
     "maplibre-gl": "^2.4.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-map-gl": "^7.0.21",
     "three": "^0.149.0",
     "web-ifc-three": "^0.0.122"
   },
