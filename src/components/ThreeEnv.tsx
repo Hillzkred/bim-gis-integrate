@@ -2,7 +2,7 @@ import { Canvas } from "@react-three/fiber";
 import React, { useEffect } from "react";
 import { useRef } from "react";
 import { IFCLoader } from "web-ifc-three";
-import { IFCModel } from "web-ifc-three/IFC/components/IFCModel";
+import { OrbitControls } from "@react-three/drei";
 
 export default function ThreeEnv() {
   const meshRef = useRef({});
@@ -15,6 +15,11 @@ export default function ThreeEnv() {
   }, []);
 
   return (
-    <Canvas>{meshRef.current && <primitive object={meshRef.current} />}</Canvas>
+    <Canvas>
+      <ambientLight intensity={0.5} />
+      <OrbitControls />
+      <gridHelper />
+      {meshRef.current && <primitive object={meshRef.current} />}
+    </Canvas>
   );
 }

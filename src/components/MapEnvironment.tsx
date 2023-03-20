@@ -2,6 +2,8 @@ import Map from "react-map-gl";
 import maplibregl from "maplibre-gl";
 import { useEffect, useRef, useState } from "react";
 import ThreeEnv from "./ThreeEnv";
+import { Canvas } from "@react-three/fiber";
+import { OrbitControls } from "@react-three/drei";
 
 function MapEnvironment() {
   return (
