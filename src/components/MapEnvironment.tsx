@@ -1,4 +1,4 @@
-import Map from "react-map-gl";
+import Map, { LngLatLike } from "react-map-gl";
 import maplibregl from "maplibre-gl";
 import { useEffect, useRef, useState } from "react";
 import ThreeEnv from "./ThreeEnv";
@@ -17,7 +17,7 @@ function MapEnvironment() {
       mapLib={maplibregl}
       mapStyle="https://api.maptiler.com/maps/basic/style.json?key=get_your_own_OpIi9ZULNHzrESv6T2vL"
     >
-      <ThreeEnv />
+      <ThreeEnv lng={2.0283} lat={48.9244} />
     </Map>
   );
 }
