@@ -1,4 +1,4 @@
-import { Select } from "@react-three/drei";
+import { Html, Select } from "@react-three/drei";
 import { Line, OrbitControls } from "@react-three/drei/core";
 import { Canvas, ThreeEvent } from "@react-three/fiber";
 import { ChangeEvent, useState } from "react";
@@ -6,7 +6,7 @@ import THREE, { BufferGeometry, Object3D } from "three";
 import { IFCLoader } from "web-ifc-three";
 import { IFCModel } from "web-ifc-three/IFC/components/IFCModel";
 import maplibregl from "maplibre-gl";
-import Map from "./components/Map";
+import MapEnvironment from "./components/MapEnvironment";
 
 function App() {
   const [id, setId] = useState(Number);
@@ -43,36 +43,41 @@ function App() {
     const geometry = ifcObject.geometry as BufferGeometry;
     const id = ifc.getExpressId(geometry, index);
   };
-
   return (
     <div className="h-screen w-screen">
-      <ul className="flex bg-slate-600 text-white p-2 ">
-        <li>
-          <input type="file" name="load" onChange={handleIfcUpload} />
-        </li>
-        <li>
-          <p>ID: {id}</p>
-        </li>
-      </ul>
-      <div className="w-full h-full">
-        <Canvas
-          camera={{ fov: 75, near: 0.1, far: 1000, position: [8, 13, 15] }}
-          raycaster={{ firstHitOnly: true }}
-        >
-          <Map />
-          <Select box multiple onClick={handleIfcClick}>
-            <mesh>
-              <primitive object={ifcModel} />
-            </mesh>
-          </Select>
-          <ambientLight intensity={0.5} />
-          <directionalLight position={[0, 10, 0]} color={0xffffff} />
-          <OrbitControls autoRotate autoRotateSpeed={0.05} makeDefault />
-          <gridHelper args={[50, 50]} />
-        </Canvas>
-      </div>
+      <MapEnvironment />{" "}
     </div>
   );
 }
 
 export default App;
+
+/*
+<ul className="flex bg-slate-600 text-white p-2 ">
+  <li>
+    <input type="file" name="load" onChange={handleIfcUpload} />
+  </li>
+  <li>
+    <p>ID: {id}</p>
+  </li>
+</ul>
+<div className="w-full h-full">
+  <Canvas
+    camera={{ fov: 75, near: 0.1, far: 1000, position: [8, 13, 15] }}
+    raycaster={{ firstHitOnly: true }}
+  >
+    <Select box multiple onClick={handleIfcClick}>
+      <mesh>
+        <primitive object={ifcModel} />
+      </mesh>
+    </Select>
+         <Html>
+            <MapEnvironment />
+          </Html> 
+    <ambientLight intensity={0.5} />
+    <directionalLight position={[0, 10, 0]} color={0xffffff} />
+    <OrbitControls autoRotate autoRotateSpeed={0.05} makeDefault />
+    <gridHelper args={[50, 50]} />
+  </Canvas>
+</div>
+*/
