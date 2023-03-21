@@ -12,21 +12,22 @@ import {
   AxesHelper,
 } from "three";
 
-import mapboxgl, { LngLatLike, MercatorCoordinate } from "mapbox-gl";
+import maplibregl, { LngLatLike, MercatorCoordinate } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 
 import { IFCLoader } from "web-ifc-three";
+import { IfcModel } from "web-ifc-three/IFC/BaseDefinitions";
 
-export const Three = () => {
+export const Three = (ifc: string) => {
   const [_customLayer, setCustomlayer]: any = useState(null);
 
   useEffect(() => {
-    const modelOrigin: LngLatLike = [-75.69435, 45.38435];
-    const modelAltitude = 15.5;
+    const modelOrigin: LngLatLike = [2.0283, 48.9244];
+    const modelAltitude = 0;
     const modelRotate = [Math.PI / 2, 0, 0];
 
     const modelAsMercatorCoordinate: MercatorCoordinate =
-      mapboxgl.MercatorCoordinate.fromLngLat(modelOrigin, modelAltitude);
+      maplibregl.MercatorCoordinate.fromLngLat(modelOrigin, modelAltitude);
     const modelTransform: any = {
       translateX: modelAsMercatorCoordinate.x,
       translateY: modelAsMercatorCoordinate.y,
@@ -63,9 +64,8 @@ export const Three = () => {
         this.scene.add(directionalLight2);
 
         const ifcLoader = new IFCLoader();
-        ifcLoader.ifcManager.setWasmPath("../wasm/");
 
-        ifcLoader.load("/sample.ifc", (model) => {
+        ifcLoader.load(ifc, (model) => {
           this.scene.add(model);
         });
 
@@ -118,7 +118,7 @@ export const Three = () => {
       },
     };
     setCustomlayer(customLayer);
-  }, [place]);
+  }, []);
 
   return _customLayer;
 };
