@@ -17,7 +17,12 @@ function MapEnvironment() {
       mapLib={maplibregl}
       mapStyle="https://api.maptiler.com/maps/basic/style.json?key=get_your_own_OpIi9ZULNHzrESv6T2vL"
     >
-      <ThreeEnv lng={2.0283} lat={48.9244} />
+      <Canvas>
+        <ambientLight intensity={0.5} />
+        <gridHelper />
+        <directionalLight />
+        <ThreeEnv lng={2.0283} lat={48.9244} />
+      </Canvas>
     </Map>
   );
 }

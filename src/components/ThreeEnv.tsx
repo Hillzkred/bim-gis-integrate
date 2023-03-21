@@ -1,29 +1,33 @@
-import { Canvas } from "@react-three/fiber";
-import React, { useEffect } from "react";
-import { useRef } from "react";
-import { IFCLoader } from "web-ifc-three";
-import { OrbitControls } from "@react-three/drei";
-import maplibreGl, { LngLatLike } from "maplibre-gl";
+import { useState, useEffect } from "react";
 
-type Props = {
-  lng: number;
-  lat: number;
-};
-export default function ThreeEnv({ lng, lat }: Props) {
-  const meshRef = useRef({});
+import {
+  PerspectiveCamera,
+  Scene,
+  DirectionalLight,
+  AmbientLight,
+  Vector3,
+  Matrix4,
+  WebGLRenderer,
+  // Box3,
+  AxesHelper,
+} from "three";
+
+import mapboxgl, { LngLatLike, MercatorCoordinate } from "mapbox-gl";
+import "maplibre-gl/dist/maplibre-gl.css";
+
+import { IFCLoader } from "web-ifc-three";
+
+export const Three = () => {
+  const [_customLayer, setCustomlayer]: any = useState(null);
 
   useEffect(() => {
-    const modelOrigin: LngLatLike = [lng, lat];
-    console.log(modelOrigin);
-    const modelAltitude = 0;
-    const modelRotate = [Math.PI / 2, 0.72, 0];
+    const modelOrigin: LngLatLike = [-75.69435, 45.38435];
+    const modelAltitude = 15.5;
+    const modelRotate = [Math.PI / 2, 0, 0];
 
-    const modelAsMercatorCoordinate = maplibreGl.MercatorCoordinate.fromLngLat(
-      modelOrigin,
-      modelAltitude
-    );
-
-    const modelTransform = {
+    const modelAsMercatorCoordinate: MercatorCoordinate =
+      mapboxgl.MercatorCoordinate.fromLngLat(modelOrigin, modelAltitude);
+    const modelTransform: any = {
       translateX: modelAsMercatorCoordinate.x,
       translateY: modelAsMercatorCoordinate.y,
       translateZ: modelAsMercatorCoordinate.z,
@@ -33,21 +37,88 @@ export default function ThreeEnv({ lng, lat }: Props) {
       scale: modelAsMercatorCoordinate.meterInMercatorCoordinateUnits(),
     };
 
-    const ifcLoader = new IFCLoader();
-    ifcLoader.load("/sample.ifc", (ifc) => {
-      meshRef.current = ifc;
-    });
-  }, []);
+    const customLayer: any = {
+      id: "3d-model",
+      type: "custom",
+      renderingMode: "3d",
+      onAdd: function (map: any, gl: any) {
+        this.camera = new PerspectiveCamera();
+        this.scene = new Scene();
 
-  return (
-    <Canvas>
-      <ambientLight intensity={0.5} />
-      <OrbitControls />
-      <gridHelper />
-      <directionalLight />
-      <mesh matrix={[]}>
-        <primitive object={meshRef.current} />
-      </mesh>
-    </Canvas>
-  );
-}
+        const axes = new AxesHelper(10);
+        axes.renderOrder = 3;
+        this.scene.add(axes);
+
+        // create three.js lights to illuminate the model
+        const lightColor = 0xffffff;
+        const ambientLight = new AmbientLight(lightColor, 0.2);
+        this.scene.add(ambientLight);
+
+        const directionalLight = new DirectionalLight(lightColor, 0.9);
+        directionalLight.position.set(0, -700, 600).normalize();
+        this.scene.add(directionalLight);
+
+        const directionalLight2 = new DirectionalLight(lightColor, 0.9);
+        directionalLight2.position.set(0, 700, 600).normalize();
+        this.scene.add(directionalLight2);
+
+        const ifcLoader = new IFCLoader();
+        ifcLoader.ifcManager.setWasmPath("../wasm/");
+
+        ifcLoader.load("/sample.ifc", (model) => {
+          this.scene.add(model);
+        });
+
+        this.map = map;
+
+        this.renderer = new WebGLRenderer({
+          canvas: map.getCanvas(),
+          context: gl,
+          antialias: true,
+        });
+
+        this.renderer.autoClear = false;
+      },
+      render: function (gl: any, matrix: any) {
+        const rotationX = new Matrix4().makeRotationAxis(
+          new Vector3(1, 0, 0),
+          modelTransform.rotateX
+        );
+        const rotationY = new Matrix4().makeRotationAxis(
+          new Vector3(0, 1, 0),
+          modelTransform.rotateY
+        );
+        const rotationZ = new Matrix4().makeRotationAxis(
+          new Vector3(0, 0, 1),
+          modelTransform.rotateZ
+        );
+
+        const m = new Matrix4().fromArray(matrix);
+        const l = new Matrix4()
+          .makeTranslation(
+            modelTransform.translateX,
+            modelTransform.translateY,
+            modelTransform.translateZ
+          )
+          .scale(
+            new Vector3(
+              modelTransform.scale,
+              -modelTransform.scale,
+              modelTransform.scale
+            )
+          )
+          .multiply(rotationX)
+          .multiply(rotationY)
+          .multiply(rotationZ);
+
+        this.camera.projectionMatrix = m.multiply(l);
+        this.renderer.resetState();
+        this.renderer.render(this.scene, this.camera);
+        this.map.triggerRepaint();
+      },
+    };
+    setCustomlayer(customLayer);
+  }, [place]);
+
+  return _customLayer;
+};
