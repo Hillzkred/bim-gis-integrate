@@ -5,17 +5,15 @@ import { ChangeEvent, useState } from "react";
 import { Event } from "three";
 
 function MapEnvironment() {
-  const [ifcUrl, setIfcUrl] = useState("");
   const handleUpload = (e: Event) => {
     if (e.target) {
       const file = e.target.files[0];
       const url = URL.createObjectURL(file);
       const urlString = url.toString();
-      setIfcUrl(urlString);
     }
   };
-  console.log(ifcUrl);
-  const three: any = Three(ifcUrl);
+
+  const three: any = Three();
   return (
     <>
       <input type="file" onChange={handleUpload} />
@@ -30,7 +28,7 @@ function MapEnvironment() {
           map.target.addLayer(three);
         }}
         mapLib={maplibregl}
-        mapStyle="https://api.maptiler.com/maps/basic/style.json?key=get_your_own_OpIi9ZULNHzrESv6T2vL"
+        mapStyle="https://api.maptiler.com/maps/basic-v2/style.json?key=ZDFWcNAeAKwpseiIpuuj"
       ></Map>
     </>
   );
