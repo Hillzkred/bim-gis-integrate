@@ -65,6 +65,7 @@ export const Three = () => {
 
         const ifcLoader = new IFCLoader();
 
+        ifcLoader.ifcManager.setWasmPath("/");
         ifcLoader.load("/sample.ifc", (model) => {
           this.scene.add(model);
         });
