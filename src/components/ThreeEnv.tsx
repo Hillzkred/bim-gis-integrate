@@ -16,9 +16,8 @@ import maplibregl, { LngLatLike, MercatorCoordinate } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 
 import { IFCLoader } from "web-ifc-three";
-import { IfcModel } from "web-ifc-three/IFC/BaseDefinitions";
 
-export const Three = (ifc: string) => {
+export const Three = () => {
   const [_customLayer, setCustomlayer]: any = useState(null);
 
   useEffect(() => {
@@ -65,7 +64,7 @@ export const Three = (ifc: string) => {
 
         const ifcLoader = new IFCLoader();
 
-        ifcLoader.load(ifc, (model) => {
+        ifcLoader.load("/sample.ifc", (model) => {
           this.scene.add(model);
         });
 
