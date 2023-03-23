@@ -19,22 +19,32 @@ import {
   // Box3,
   AxesHelper,
 } from 'three';
-import DeckGL from '@deck.gl/react/typed';
-import { Html, OrbitControls } from '@react-three/drei';
+import { OrbitControls } from '@react-three/drei';
+import { IFCManager } from 'web-ifc-three/IFC/components/IFCManager';
+import {
+  acceleratedRaycast,
+  computeBoundsTree,
+  disposeBoundsTree,
+} from 'three-mesh-bvh';
 
 function MapEnvironment() {
   const [ifcUrl, setIfcUrl] = useState('');
   const [mapContainer, setMapContainer] = useState();
   const [glContext, setGlContext] = useState();
-  const [ifcModel, setIfcModel] = useState<IFCModel>();
-  const glRef = useRef(null);
-  const mapRef = useRef(null);
+  const [ifcModel, setIfcModel] = useState<IFCModel | null>(null);
+  const [url, setUrl] = useState('');
 
-  const handleUpload = async (e: Event) => {
-    const file = await e.target.files[0];
-    const url = URL.createObjectURL(file);
-    const urlString = url.toString();
-    setIfcUrl(urlString);
+  const ifcLoader = new IFCLoader();
+  ifcLoader.ifcManager.setupThreeMeshBVH(
+    computeBoundsTree,
+    acceleratedRaycast,
+    disposeBoundsTree
+  );
+
+  const handleUpload = async (event: ChangeEvent<HTMLInputElement>) => {
+    const IfcFileFromEvent = event.target.files as FileList;
+    const url = URL.createObjectURL(IfcFileFromEvent[0]);
+    await ifcLoader.loadAsync(url).then((model) => setIfcModel(model));
   };
 
   // useEffect(() => {
@@ -83,11 +93,15 @@ function MapEnvironment() {
     directionalLight2.position.set(0, 700, 600).normalize();
     scene.add(directionalLight2);
 
-    const ifcLoader = new IFCLoader();
+    // ifcLoader.load(ifcUrl, (model) => {
+    //   scene.add(model);
+    // });
 
-    ifcLoader.load('/sample.ifc', (model) => {
-      scene.add(model);
-    });
+    async () => {
+      ifcLoader.loadAsync(url, (model) => {
+        scene.add(model);
+      });
+    };
 
     renderer = new WebGLRenderer({
       canvas: map.getCanvas(),
