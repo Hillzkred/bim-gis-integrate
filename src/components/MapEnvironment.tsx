@@ -1,13 +1,13 @@
-import Map, { Layer, LngLatLike, Source } from "react-map-gl";
-import maplibregl, { MercatorCoordinate } from "maplibre-gl";
-import { Three } from "./ThreeEnv";
-import { ChangeEvent, useEffect, useState } from "react";
-import { Event } from "three";
-import { Canvas } from "@react-three/fiber";
-import { IFCLoader } from "web-ifc-three";
-import { IfcModel } from "web-ifc-three/IFC/BaseDefinitions";
-import { IFCModel } from "web-ifc-three/IFC/components/IFCModel";
-import ThreeFiber from "./ThreeFiber";
+import Map, { Layer, LngLatLike, Source } from 'react-map-gl';
+import maplibregl, { MercatorCoordinate } from 'maplibre-gl';
+import { Three } from './ThreeEnv';
+import { ChangeEvent, useEffect, useRef, useState } from 'react';
+import { Event } from 'three';
+import { Canvas } from '@react-three/fiber';
+import { IFCLoader } from 'web-ifc-three';
+import { IfcModel } from 'web-ifc-three/IFC/BaseDefinitions';
+import { IFCModel } from 'web-ifc-three/IFC/components/IFCModel';
+import ThreeFiber from './ThreeFiber';
 import {
   PerspectiveCamera,
   Scene,
@@ -18,11 +18,17 @@ import {
   WebGLRenderer,
   // Box3,
   AxesHelper,
-} from "three";
+} from 'three';
+import DeckGL from '@deck.gl/react/typed';
+import { Html, OrbitControls } from '@react-three/drei';
 
 function MapEnvironment() {
-  const [ifcUrl, setIfcUrl] = useState("");
+  const [ifcUrl, setIfcUrl] = useState('');
+  const [mapContainer, setMapContainer] = useState();
+  const [glContext, setGlContext] = useState();
   const [ifcModel, setIfcModel] = useState<IFCModel>();
+  const glRef = useRef(null);
+  const mapRef = useRef(null);
 
   const handleUpload = async (e: Event) => {
     const file = await e.target.files[0];
@@ -55,50 +61,84 @@ function MapEnvironment() {
     scale: modelAsMercatorCoordinate.meterInMercatorCoordinateUnits(),
   };
 
-  const handleLoad = (map: mapboxgl.Map, gl: WebGLRenderingContext) => {
-    this.camera = new PerspectiveCamera();
-    this.scene = new Scene();
+  const camera = new PerspectiveCamera();
+  const scene = new Scene();
+  let renderer: WebGLRenderer;
 
+  const handleOnAdd = (map: mapboxgl.Map, gl: WebGLRenderingContext) => {
     const axes = new AxesHelper(10);
     axes.renderOrder = 3;
-    this.scene.add(axes);
+    scene.add(axes);
 
     // create three.js lights to illuminate the model
     const lightColor = 0xffffff;
     const ambientLight = new AmbientLight(lightColor, 0.2);
-    this.scene.add(ambientLight);
+    scene.add(ambientLight);
 
     const directionalLight = new DirectionalLight(lightColor, 0.9);
     directionalLight.position.set(0, -700, 600).normalize();
-    this.scene.add(directionalLight);
+    scene.add(directionalLight);
 
     const directionalLight2 = new DirectionalLight(lightColor, 0.9);
     directionalLight2.position.set(0, 700, 600).normalize();
-    this.scene.add(directionalLight2);
+    scene.add(directionalLight2);
 
     const ifcLoader = new IFCLoader();
 
-    ifcLoader.load("/sample.ifc", (model) => {
-      this.scene.add(model);
+    ifcLoader.load('/sample.ifc', (model) => {
+      scene.add(model);
     });
 
-    this.map = map;
-
-    this.renderer = new WebGLRenderer({
+    renderer = new WebGLRenderer({
       canvas: map.getCanvas(),
       context: gl,
       antialias: true,
     });
-
-    this.renderer.autoClear = false;
+    renderer.autoClear = false;
   };
-  const handleRender = (gl, matrix) => {};
 
-  const three: any = Three();
+  const handleRender = (gl: WebGLRenderingContext, matrix: number[]) => {
+    const rotationX = new Matrix4().makeRotationAxis(
+      new Vector3(1, 0, 0),
+      modelTransform.rotateX
+    );
+    const rotationY = new Matrix4().makeRotationAxis(
+      new Vector3(0, 1, 0),
+      modelTransform.rotateY
+    );
+    const rotationZ = new Matrix4().makeRotationAxis(
+      new Vector3(0, 0, 1),
+      modelTransform.rotateZ
+    );
+
+    const m = new Matrix4().fromArray(matrix);
+    const l = new Matrix4()
+      .makeTranslation(
+        modelTransform.translateX,
+        modelTransform.translateY,
+        modelTransform.translateZ
+      )
+      .scale(
+        new Vector3(
+          modelTransform.scale,
+          -modelTransform.scale,
+          modelTransform.scale
+        )
+      )
+      .multiply(rotationX)
+      .multiply(rotationY)
+      .multiply(rotationZ);
+
+    camera.projectionMatrix = m.multiply(l);
+    renderer.resetState();
+    renderer.render(scene, camera);
+  };
+
+  // const three: any = Three();
 
   return (
     <>
-      <input type="file" onChange={handleUpload} />
+      <input type='file' onChange={handleUpload} />
       <Map
         initialViewState={{
           longitude: 2.0283,
@@ -110,12 +150,15 @@ function MapEnvironment() {
         //   map.target.addLayer(three);
         // }}
         mapLib={maplibregl}
-        mapStyle="https://api.maptiler.com/maps/basic-v2/style.json?key=ZDFWcNAeAKwpseiIpuuj"
+        mapStyle='https://api.maptiler.com/maps/basic-v2/style.json?key=ZDFWcNAeAKwpseiIpuuj'
       >
-        {/* <Layer type="custom" onAdd={handleLoad}/> */}
-        <Layer type="custom" render={handleRender}>
-          <sphereBufferGeometry />
-        </Layer>
+        <Layer
+          type='custom'
+          id='3d-building'
+          renderingMode='3d'
+          onAdd={handleOnAdd}
+          render={handleRender}
+        />
       </Map>
     </>
   );

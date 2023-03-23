@@ -1,12 +1,12 @@
-import { Html, Select } from "@react-three/drei";
-import { Line, OrbitControls } from "@react-three/drei/core";
-import { Canvas, ThreeEvent } from "@react-three/fiber";
-import { ChangeEvent, useState } from "react";
-import THREE, { BufferGeometry, Object3D } from "three";
-import { IFCLoader } from "web-ifc-three";
-import { IFCModel } from "web-ifc-three/IFC/components/IFCModel";
-import maplibregl from "maplibre-gl";
-import MapEnvironment from "./components/MapEnvironment";
+import { Html, Select } from '@react-three/drei';
+import { Line, OrbitControls } from '@react-three/drei/core';
+import { Canvas, ThreeEvent } from '@react-three/fiber';
+import { ChangeEvent, useState } from 'react';
+import THREE, { BufferGeometry, Object3D } from 'three';
+import { IFCLoader } from 'web-ifc-three';
+import { IFCModel } from 'web-ifc-three/IFC/components/IFCModel';
+import maplibregl from 'maplibre-gl';
+import MapEnvironment from './components/MapEnvironment';
 
 function App() {
   const [id, setId] = useState(Number);
@@ -44,8 +44,8 @@ function App() {
     const id = ifc.getExpressId(geometry, index);
   };
   return (
-    <div className="h-screen w-screen">
-      <MapEnvironment />{" "}
+    <div className='h-screen w-screen'>
+      <MapEnvironment />
     </div>
   );
 }

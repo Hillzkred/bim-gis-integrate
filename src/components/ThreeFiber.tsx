@@ -1,5 +1,13 @@
-import { useLoader, useThree } from "@react-three/fiber";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
-import { IFCLoader } from "web-ifc-three";
+import { useLoader, useThree } from '@react-three/fiber';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { IFCLoader } from 'web-ifc-three';
 
-export default function ThreeFiber() {}
+export default function ThreeFiber() {
+  const { scene } = useThree();
+
+  return (
+    <mesh>
+      <sphereGeometry />
+    </mesh>
+  );
+}
