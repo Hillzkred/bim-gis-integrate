@@ -44,7 +44,9 @@ function MapEnvironment() {
   const handleUpload = async (event: ChangeEvent<HTMLInputElement>) => {
     const IfcFileFromEvent = event.target.files as FileList;
     const url = URL.createObjectURL(IfcFileFromEvent[0]);
-    await ifcLoader.loadAsync(url).then((model) => setIfcModel(model));
+    await ifcLoader
+      .loadAsync(url)
+      .then((model: SetStateAction<IFCModel | null>) => scene.add(model));
   };
 
   // useEffect(() => {
@@ -93,15 +95,9 @@ function MapEnvironment() {
     directionalLight2.position.set(0, 700, 600).normalize();
     scene.add(directionalLight2);
 
-    // ifcLoader.load(ifcUrl, (model) => {
+    // ifcLoader.load('/sample.ifc', (model) => {
     //   scene.add(model);
     // });
-
-    async () => {
-      ifcLoader.loadAsync(url, (model) => {
-        scene.add(model);
-      });
-    };
 
     renderer = new WebGLRenderer({
       canvas: map.getCanvas(),
@@ -166,13 +162,17 @@ function MapEnvironment() {
         mapLib={maplibregl}
         mapStyle='https://api.maptiler.com/maps/basic-v2/style.json?key=ZDFWcNAeAKwpseiIpuuj'
       >
-        <Layer
-          type='custom'
-          id='3d-building'
-          renderingMode='3d'
-          onAdd={handleOnAdd}
-          render={handleRender}
-        />
+        <Canvas camera={{ position: [10, 10, 20] }}>
+          <gridHelper />
+          <OrbitControls />
+          <Layer
+            type='custom'
+            id='3d-building'
+            renderingMode='3d'
+            onAdd={handleOnAdd}
+            render={handleRender}
+          />
+        </Canvas>
       </Map>
     </>
   );
