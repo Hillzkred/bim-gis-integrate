@@ -23,7 +23,7 @@ import {
   // Box3,
   AxesHelper,
 } from 'three';
-import { OrbitControls } from '@react-three/drei';
+import { OrbitControls, Box } from '@react-three/drei';
 import { IFCManager } from 'web-ifc-three/IFC/components/IFCManager';
 import {
   acceleratedRaycast,
@@ -31,6 +31,7 @@ import {
   disposeBoundsTree,
 } from 'three-mesh-bvh';
 import * as THREE from 'three';
+import ThreeFiber from './components/ThreeFiber';
 
 export default function App() {
   const [ifcUrl, setIfcUrl] = useState('');
@@ -165,7 +166,41 @@ export default function App() {
   return (
     <div>
       <input type='file' onChange={handleUpload} />
+      {/* <Canvas
+        gl={{
+          canvas: mapContainer?.getCanvas(),
+          context: glContext,
+          antialias: true,
+          autoClear: false,
+        }}
+        camera={{ projectionMatrix: matrixArray }}
+      >
+        <OrbitControls />
+        <axesHelper args={[10]} renderOrder={3} />
+        <gridHelper />
+        <ambientLight intensity={0.5} />
+        <mesh>
+        <sphereGeometry />
+        </mesh>
+      </Canvas> */}
       <div className='h-screen w-screen'>
+        {matrixArray && (
+          <Canvas
+            gl={{
+              canvas: mapContainer?.getCanvas(),
+              context: glContext,
+              antialias: true,
+              autoClear: false,
+            }}
+          >
+            <axesHelper args={[10]} renderOrder={3} />
+            <ambientLight intensity={0.5} />
+            <mesh castShadow>
+              {/* <boxGeometry args={[100, 100, 100]} /> */}
+            </mesh>
+            <ThreeFiber map={mapContainer} matrix={matrixArray} />
+          </Canvas>
+        )}
         <Map
           initialViewState={{
             longitude: 2.0283,
@@ -176,78 +211,60 @@ export default function App() {
           mapLib={maplibregl}
           mapStyle='https://api.maptiler.com/maps/basic-v2/style.json?key=ZDFWcNAeAKwpseiIpuuj'
         >
-          <Canvas
-            gl={{
-              canvas: mapContainer?.getCanvas(),
-              context: glContext,
-              antialias: true,
-              autoClear: false,
-              render: (scene: Scene, camera: THREE.Camera) => {
-                console.log('canvas rendered');
-              },
+          <Layer
+            type='custom'
+            id='3d-building'
+            renderingMode='3d'
+            onAdd={(map: mapboxgl.Map, gl: WebGLRenderingContext) => {
+              console.log('Layer added');
+              setupGlContext(map, gl).then((res) => {
+                setMapState(true);
+                setGlContext(res.gl);
+                setMapContainer(res.map);
+              });
             }}
-            camera={{ projectionMatrix: matrixArray }}
-          >
-            <axesHelper args={[10]} renderOrder={3} />
-            <gridHelper />
-            <ambientLight intensity={0.5} />
-            <mesh>
-              <sphereGeometry />
-              {/* <boxGeometry args={[10000, 10000, 10000]} /> */}
-              <Layer
-                type='custom'
-                id='3d-building'
-                renderingMode='3d'
-                onAdd={(map: mapboxgl.Map, gl: WebGLRenderingContext) => {
-                  console.log('Layer added');
-                  setupGlContext(map, gl).then((res) => {
-                    setMapState(true);
-                    setGlContext(res.gl);
-                    setMapContainer(res.map);
-                  });
-                }}
-                render={(gl: WebGLRenderingContext, matrix: number[]) => {
-                  // console.log('Layer rendered');
-                  const rotationX = new Matrix4().makeRotationAxis(
-                    new Vector3(1, 0, 0),
-                    modelTransform.rotateX
-                  );
-                  const rotationY = new Matrix4().makeRotationAxis(
-                    new Vector3(0, 1, 0),
-                    modelTransform.rotateY
-                  );
-                  const rotationZ = new Matrix4().makeRotationAxis(
-                    new Vector3(0, 0, 1),
-                    modelTransform.rotateZ
-                  );
-                  const m = new Matrix4().fromArray(matrix);
-                  const l = new Matrix4()
-                    .makeTranslation(
-                      modelTransform.translateX,
-                      modelTransform.translateY,
-                      modelTransform.translateZ
-                    )
-                    .scale(
-                      new Vector3(
-                        modelTransform.scale,
-                        -modelTransform.scale,
-                        modelTransform.scale
-                      )
-                    )
-                    .multiply(rotationX)
-                    .multiply(rotationY)
-                    .multiply(rotationZ);
-                  // camera.projectionMatrix = m.multiply(l);
-                  // renderer.resetState();
-                  // renderer.render(scene, camera);
-                  setupMatrix(m, l).then((matrix) => {
-                    setMatrixArray(matrix.m.multiply(matrix.l));
-                    setToggleCanvas(true);
-                  });
-                }}
-              />
-            </mesh>
-          </Canvas>
+            render={(gl: WebGLRenderingContext, matrix: number[]) => {
+              console.log('Renderer added');
+              const rotationX = new Matrix4().makeRotationAxis(
+                new Vector3(1, 0, 0),
+                modelTransform.rotateX
+              );
+              const rotationY = new Matrix4().makeRotationAxis(
+                new Vector3(0, 1, 0),
+                modelTransform.rotateY
+              );
+              const rotationZ = new Matrix4().makeRotationAxis(
+                new Vector3(0, 0, 1),
+                modelTransform.rotateZ
+              );
+              const m = new Matrix4().fromArray(matrix);
+              const l = new Matrix4()
+                .makeTranslation(
+                  modelTransform.translateX,
+                  modelTransform.translateY,
+                  modelTransform.translateZ
+                )
+                .scale(
+                  new Vector3(
+                    modelTransform.scale,
+                    -modelTransform.scale,
+                    modelTransform.scale
+                  )
+                )
+                .multiply(rotationX)
+                .multiply(rotationY)
+                .multiply(rotationZ);
+              // camera.projectionMatrix = m.multiply(l);
+              // renderer.resetState();
+              // renderer.render(scene, camera);
+              setupMatrix(m, l).then((matrix) => {
+                const matrixM = matrix.m;
+                const matrixL = matrix.l;
+                setMatrixArray(matrixM.multiply(matrixL));
+                setToggleCanvas(true);
+              });
+            }}
+          />
         </Map>
       </div>
     </div>
