@@ -162,17 +162,13 @@ function MapEnvironment() {
         mapLib={maplibregl}
         mapStyle='https://api.maptiler.com/maps/basic-v2/style.json?key=ZDFWcNAeAKwpseiIpuuj'
       >
-        <Canvas camera={{ position: [10, 10, 20] }}>
-          <gridHelper />
-          <OrbitControls />
-          <Layer
-            type='custom'
-            id='3d-building'
-            renderingMode='3d'
-            onAdd={handleOnAdd}
-            render={handleRender}
-          />
-        </Canvas>
+        <Layer
+          type='custom'
+          id='3d-building'
+          renderingMode='3d'
+          onAdd={handleOnAdd}
+          render={handleRender}
+        />
       </Map>
     </>
   );

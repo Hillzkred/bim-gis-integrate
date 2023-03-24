@@ -1,83 +1,255 @@
-import { Html, Select } from '@react-three/drei';
-import { Line, OrbitControls } from '@react-three/drei/core';
-import { Canvas, ThreeEvent } from '@react-three/fiber';
-import { ChangeEvent, useState } from 'react';
-import THREE, { BufferGeometry, Object3D } from 'three';
+import Map, { Layer, LngLatLike, Source } from 'react-map-gl';
+import maplibregl, { MercatorCoordinate } from 'maplibre-gl';
+import {
+  ChangeEvent,
+  SetStateAction,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
+import { Event } from 'three';
+import { Canvas, RootState, _roots } from '@react-three/fiber';
 import { IFCLoader } from 'web-ifc-three';
+import { IfcModel } from 'web-ifc-three/IFC/BaseDefinitions';
 import { IFCModel } from 'web-ifc-three/IFC/components/IFCModel';
-import maplibregl from 'maplibre-gl';
-import MapEnvironment from './components/MapEnvironment';
+import {
+  PerspectiveCamera,
+  Scene,
+  DirectionalLight,
+  AmbientLight,
+  Vector3,
+  Matrix4,
+  WebGLRenderer,
+  // Box3,
+  AxesHelper,
+} from 'three';
+import { OrbitControls } from '@react-three/drei';
+import { IFCManager } from 'web-ifc-three/IFC/components/IFCManager';
+import {
+  acceleratedRaycast,
+  computeBoundsTree,
+  disposeBoundsTree,
+} from 'three-mesh-bvh';
+import * as THREE from 'three';
 
-function App() {
-  const [id, setId] = useState(Number);
-  const [ifcModel, setIfcModel] = useState({} as IFCModel);
-  const [ifcModelsArray, setIfcModelsArray] = useState(Array<Object3D>);
+export default function App() {
+  const [ifcUrl, setIfcUrl] = useState('');
+  const [mapContainer, setMapContainer] = useState<mapboxgl.Map>();
+  const [glContext, setGlContext] = useState<WebGLRenderingContext>();
+  const [matrixArray, setMatrixArray] = useState<Matrix4>();
+  const [matrix, setMatrix] = useState();
+  const [ifcModel, setIfcModel] = useState<IFCModel | null>(null);
+  const [url, setUrl] = useState('');
+  const [threeScene, setThreeScene] = useState<RootState>();
+  const [mapState, setMapState] = useState(false);
+  const [toggleCanvas, setToggleCanvas] = useState(false);
+
+  useEffect(() => {}, []);
+  // console.log(glContext);
+  // console.log(mapContainer);
+  // console.log(matrixArray);
+  // console.log(toggleCanvas);
 
   const ifcLoader = new IFCLoader();
-  const ifc = ifcLoader.ifcManager;
+  ifcLoader.ifcManager.setupThreeMeshBVH(
+    computeBoundsTree,
+    acceleratedRaycast,
+    disposeBoundsTree
+  );
 
-  const handleIfcUpload = (event: ChangeEvent<HTMLInputElement>) => {
-    const IfcFileFromEvent = event.target.files as FileList;
-    const url = URL.createObjectURL(IfcFileFromEvent[0]);
-    ifcLoader.load(url, (ifcModel) => {
-      console.log(ifcModel);
-      setIfcModel(ifcModel);
-      setIfcModelsArray([...ifcModelsArray, ifcModel]);
+  const handleUpload = async (event: ChangeEvent<HTMLInputElement>) => {
+    // const IfcFileFromEvent = event.target.files as FileList;
+    // const url = URL.createObjectURL(IfcFileFromEvent[0]);
+    // await ifcLoader
+    //   .loadAsync(url)
+    //   .then((model: SetStateAction<IFCModel | null>) => scene.add(model));
+  };
+
+  const modelOrigin: LngLatLike = [2.0283, 48.9244];
+  const modelAltitude = 0;
+  const modelRotate = [Math.PI / 2, 0, 0];
+
+  const modelAsMercatorCoordinate: MercatorCoordinate =
+    maplibregl.MercatorCoordinate.fromLngLat(modelOrigin, modelAltitude);
+  const modelTransform: any = {
+    translateX: modelAsMercatorCoordinate.x,
+    translateY: modelAsMercatorCoordinate.y,
+    translateZ: modelAsMercatorCoordinate.z,
+    rotateX: modelRotate[0],
+    rotateY: modelRotate[1],
+    rotateZ: modelRotate[2],
+    scale: modelAsMercatorCoordinate.meterInMercatorCoordinateUnits(),
+  };
+
+  // const camera = new PerspectiveCamera();
+  // const scene = new Scene();
+  // let renderer: WebGLRenderer;
+
+  function setupGlContext(a: mapboxgl.Map, b: WebGLRenderingContext) {
+    return new Promise((res) => {
+      res({ map: a, gl: b });
     });
-  };
+  }
 
-  const handleIfcClick = (event: ThreeEvent<MouseEvent>) => {
-    const index = event.faceIndex as number;
-    const ifcObject = event.object as IFCModel;
-    const geometry = ifcObject.geometry as BufferGeometry;
-    const id = ifc.getExpressId(geometry, index);
-    setId(id);
-    console.log(id);
-  };
+  function setupMatrix(a: Matrix4, b: Matrix4) {
+    return new Promise((res) => {
+      res({ m: a, l: b });
+    });
+  }
 
-  const handlePointerEnter = (event: ThreeEvent<MouseEvent>) => {
-    const ifcObject = event.object as IFCModel;
-    const modelId = ifcObject.modelID;
+  // const handleOnAdd = (map: mapboxgl.Map, gl: WebGLRenderingContext) => {
+  //create three.js lights to illuminate the model
+  // const lightColor = 0xffffff;
+  // const ambientLight = new AmbientLight(lightColor, 0.2);
+  // scene.add(ambientLight);
+  // const directionalLight = new DirectionalLight(lightColor, 0.9);
+  // directionalLight.position.set(0, -700, 600).normalize();
+  // scene.add(directionalLight);
+  // const directionalLight2 = new DirectionalLight(lightColor, 0.9);
+  // directionalLight2.position.set(0, 700, 600).normalize();
+  // scene.add(directionalLight2);
+  // const geometry = new THREE.BoxGeometry(1000000, 1000000, 1000000);
+  // const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+  // const cube = new THREE.Mesh(geometry, material);
+  // scene.add(cube);
+  // ifcLoader.load('/sample.ifc', (model) => {
+  //   scene.add(model);
+  // });
+  // renderer = new WebGLRenderer({
+  //   canvas: map.getCanvas(),
+  //   context: gl,
+  //   antialias: true,
+  // });
+  // renderer.autoClear = false;
+  // };
 
-    const index = event.faceIndex as number;
-    const geometry = ifcObject.geometry as BufferGeometry;
-    const id = ifc.getExpressId(geometry, index);
-  };
+  // const handleRender = (gl: WebGLRenderingContext, matrix: number[]) => {
+  //   const rotationX = new Matrix4().makeRotationAxis(
+  //     new Vector3(1, 0, 0),
+  //     modelTransform.rotateX
+  //   );
+  //   const rotationY = new Matrix4().makeRotationAxis(
+  //     new Vector3(0, 1, 0),
+  //     modelTransform.rotateY
+  //   );
+  //   const rotationZ = new Matrix4().makeRotationAxis(
+  //     new Vector3(0, 0, 1),
+  //     modelTransform.rotateZ
+  //   );
+  //   const m = new Matrix4().fromArray(matrix);
+  //   const l = new Matrix4()
+  //     .makeTranslation(
+  //       modelTransform.translateX,
+  //       modelTransform.translateY,
+  //       modelTransform.translateZ
+  //     )
+  //     .scale(
+  //       new Vector3(
+  //         modelTransform.scale,
+  //         -modelTransform.scale,
+  //         modelTransform.scale
+  //       )
+  //     )
+  //     .multiply(rotationX)
+  //     .multiply(rotationY)
+  //     .multiply(rotationZ);
+  //   // camera.projectionMatrix = m.multiply(l);
+  //   // renderer.resetState();
+  //   // renderer.render(scene, camera);
+  //   setupMatrix(m, l).then((matrix) => {
+  //     setMatrixArray(matrix.m.multiply(matrix.l));
+  //     setToggleCanvas(true);
+  //   });
+  // };
+
   return (
-    <div className='h-screen w-screen'>
-      <MapEnvironment />
+    <div>
+      <input type='file' onChange={handleUpload} />
+      <div className='h-screen w-screen'>
+        <Map
+          initialViewState={{
+            longitude: 2.0283,
+            latitude: 48.9244,
+            zoom: 18,
+            pitch: 90,
+          }}
+          mapLib={maplibregl}
+          mapStyle='https://api.maptiler.com/maps/basic-v2/style.json?key=ZDFWcNAeAKwpseiIpuuj'
+        >
+          <Canvas
+            gl={{
+              canvas: mapContainer?.getCanvas(),
+              context: glContext,
+              antialias: true,
+              autoClear: false,
+              render: (scene: Scene, camera: THREE.Camera) => {
+                console.log('canvas rendered');
+              },
+            }}
+            camera={{ projectionMatrix: matrixArray }}
+          >
+            <axesHelper args={[10]} renderOrder={3} />
+            <gridHelper />
+            <ambientLight intensity={0.5} />
+            <mesh>
+              <sphereGeometry />
+              {/* <boxGeometry args={[10000, 10000, 10000]} /> */}
+              <Layer
+                type='custom'
+                id='3d-building'
+                renderingMode='3d'
+                onAdd={(map: mapboxgl.Map, gl: WebGLRenderingContext) => {
+                  console.log('Layer added');
+                  setupGlContext(map, gl).then((res) => {
+                    setMapState(true);
+                    setGlContext(res.gl);
+                    setMapContainer(res.map);
+                  });
+                }}
+                render={(gl: WebGLRenderingContext, matrix: number[]) => {
+                  // console.log('Layer rendered');
+                  const rotationX = new Matrix4().makeRotationAxis(
+                    new Vector3(1, 0, 0),
+                    modelTransform.rotateX
+                  );
+                  const rotationY = new Matrix4().makeRotationAxis(
+                    new Vector3(0, 1, 0),
+                    modelTransform.rotateY
+                  );
+                  const rotationZ = new Matrix4().makeRotationAxis(
+                    new Vector3(0, 0, 1),
+                    modelTransform.rotateZ
+                  );
+                  const m = new Matrix4().fromArray(matrix);
+                  const l = new Matrix4()
+                    .makeTranslation(
+                      modelTransform.translateX,
+                      modelTransform.translateY,
+                      modelTransform.translateZ
+                    )
+                    .scale(
+                      new Vector3(
+                        modelTransform.scale,
+                        -modelTransform.scale,
+                        modelTransform.scale
+                      )
+                    )
+                    .multiply(rotationX)
+                    .multiply(rotationY)
+                    .multiply(rotationZ);
+                  // camera.projectionMatrix = m.multiply(l);
+                  // renderer.resetState();
+                  // renderer.render(scene, camera);
+                  setupMatrix(m, l).then((matrix) => {
+                    setMatrixArray(matrix.m.multiply(matrix.l));
+                    setToggleCanvas(true);
+                  });
+                }}
+              />
+            </mesh>
+          </Canvas>
+        </Map>
+      </div>
     </div>
   );
 }
-
-export default App;
-
-/*
-<ul className="flex bg-slate-600 text-white p-2 ">
-  <li>
-    <input type="file" name="load" onChange={handleIfcUpload} />
-  </li>
-  <li>
-    <p>ID: {id}</p>
-  </li>
-</ul>
-<div className="w-full h-full">
-  <Canvas
-    camera={{ fov: 75, near: 0.1, far: 1000, position: [8, 13, 15] }}
-    raycaster={{ firstHitOnly: true }}
-  >
-    <Select box multiple onClick={handleIfcClick}>
-      <mesh>
-        <primitive object={ifcModel} />
-      </mesh>
-    </Select>
-         <Html>
-            <MapEnvironment />
-          </Html> 
-    <ambientLight intensity={0.5} />
-    <directionalLight position={[0, 10, 0]} color={0xffffff} />
-    <OrbitControls autoRotate autoRotateSpeed={0.05} makeDefault />
-    <gridHelper args={[50, 50]} />
-  </Canvas>
-</div>
-*/
