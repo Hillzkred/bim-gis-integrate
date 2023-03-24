@@ -1,40 +1,26 @@
 import { Canvas, useLoader, useThree } from '@react-three/fiber';
+import { useEffect } from 'react';
 import { AxesHelper, Matrix } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { IFCLoader } from 'web-ifc-three';
 
 type Props = {
-  matrix?: number[];
+  matrix?: Matrix;
   map?: mapboxgl.Map;
 };
 
-export default function ThreeFiber({ matrix }: Props) {
-  // const { scene, gl, camera } = useThree();
+const ThreeFiber = ({ matrix }: Props) => {
+  const { gl: renderer, camera, scene } = useThree();
   // const axes = new AxesHelper(10);
   // axes.renderOrder = 3;
   // scene.add(axes);
 
-  // gl.autoClear = false;
+  console.log('Fiber Rendered');
+  renderer.autoClear = false;
+  camera.projectionMatrix = matrix;
+  renderer.resetState();
+  renderer.render(scene, camera);
+  return null;
+};
 
-  // const ifcLoader = new IFCLoader();
-  // ifcLoader.load('/sample.ifc', (model) => {
-  //   scene.add(model);
-  // });
-  console.log("I'm being rendered");
-
-  return (
-    <Canvas camera={{ position: [5, 3, 5] }}>
-      <ambientLight intensity={0.5} />
-      <axesHelper args={[10]} renderOrder={3} />
-      <mesh
-        matrix={{
-          fromArray(array) {
-            console.log(array);
-          },
-        }}
-      >
-        <sphereGeometry />
-      </mesh>
-    </Canvas>
-  );
-}
+export default ThreeFiber;
