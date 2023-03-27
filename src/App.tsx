@@ -23,7 +23,7 @@ import {
   // Box3,
   AxesHelper,
 } from 'three';
-import { OrbitControls, Box } from '@react-three/drei';
+import { Stage, Sky, OrbitControls, Box } from '@react-three/drei';
 import { IFCManager } from 'web-ifc-three/IFC/components/IFCManager';
 import {
   acceleratedRaycast,
@@ -35,7 +35,8 @@ import ThreeFiber from './components/ThreeFiber';
 
 export default function App() {
   const [ifcUrl, setIfcUrl] = useState('');
-  const [mapContainer, setMapContainer] = useState<mapboxgl.Map>();
+  // const [mapContainer, setMapContainer] = useState<mapboxgl.Map>();
+  const [mapCanvas, setMapCanvas] = useState<HTMLCanvasElement>();
   const [glContext, setGlContext] = useState<WebGLRenderingContext>();
   const [matrixArray, setMatrixArray] = useState<Matrix4>();
   const [matrix, setMatrix] = useState();
@@ -162,7 +163,6 @@ export default function App() {
   //     setToggleCanvas(true);
   //   });
   // };
-
   return (
     <div>
       <input type='file' onChange={handleUpload} />
@@ -184,23 +184,6 @@ export default function App() {
         </mesh>
       </Canvas> */}
       <div className='h-screen w-screen'>
-        {matrixArray && (
-          <Canvas
-            gl={{
-              canvas: mapContainer?.getCanvas(),
-              context: glContext,
-              antialias: true,
-              autoClear: false,
-            }}
-          >
-            <axesHelper args={[10]} renderOrder={3} />
-            <ambientLight intensity={0.5} />
-            <mesh castShadow>
-              {/* <boxGeometry args={[100, 100, 100]} /> */}
-            </mesh>
-            <ThreeFiber map={mapContainer} matrix={matrixArray} />
-          </Canvas>
-        )}
         <Map
           initialViewState={{
             longitude: 2.0283,
@@ -215,16 +198,8 @@ export default function App() {
             type='custom'
             id='3d-building'
             renderingMode='3d'
-            onAdd={(map: mapboxgl.Map, gl: WebGLRenderingContext) => {
-              console.log('Layer added');
-              setupGlContext(map, gl).then((res) => {
-                setMapState(true);
-                setGlContext(res.gl);
-                setMapContainer(res.map);
-              });
-            }}
             render={(gl: WebGLRenderingContext, matrix: number[]) => {
-              console.log('Renderer added');
+              console.log("I'm rendered second");
               const rotationX = new Matrix4().makeRotationAxis(
                 new Vector3(1, 0, 0),
                 modelTransform.rotateX
@@ -258,14 +233,40 @@ export default function App() {
               // renderer.resetState();
               // renderer.render(scene, camera);
               setupMatrix(m, l).then((matrix) => {
-                const matrixM = matrix.m;
-                const matrixL = matrix.l;
-                setMatrixArray(matrixM.multiply(matrixL));
+                setMatrixArray(m.multiply(l));
                 setToggleCanvas(true);
+              });
+            }}
+            onAdd={(map: mapboxgl.Map, gl: WebGLRenderingContext) => {
+              console.log("I'm rendered first");
+              () => {
+                setGlContext(gl);
+              };
+              setupGlContext(map, gl).then((res) => {
+                const newCanvas = map.getCanvas();
+                setMapState(true);
+                setMapCanvas(newCanvas);
+                // setGlContext(gl);
               });
             }}
           />
         </Map>
+        {matrixArray && (
+          <Canvas
+            gl={{ canvas: mapCanvas, autoClear: false, context: glContext }}
+            shadows
+            // camera={{ projectionMatrix: matrixArray }}
+          >
+            <ThreeFiber matrix={matrixArray} />
+            {/* <perspectiveCamera projectionMatrix={matrixArray} /> */}
+            <axesHelper args={[10]} renderOrder={3} />
+            <ambientLight intensity={0.5} />
+            <directionalLight position={[0, -700, 600]} />
+            <mesh castShadow>
+              <boxGeometry args={[10, 10, 10]} />
+            </mesh>
+          </Canvas>
+        )}
       </div>
     </div>
   );
