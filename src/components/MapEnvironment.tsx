@@ -26,7 +26,7 @@ function MapEnvironment() {
     }
   };
 
-  const three: any = Three();
+  // const three: any = Three();
 
   const modelOrigin: LngLatLike = [2.0283, 48.9244];
   const modelAltitude = 0;
