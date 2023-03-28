@@ -1,17 +1,17 @@
-import Map, { Layer, LngLatLike, Source } from 'react-map-gl';
-import maplibregl, { MercatorCoordinate } from 'maplibre-gl';
+import Map, { Layer, LngLatLike, Source } from "react-map-gl";
+import maplibregl, { MercatorCoordinate } from "maplibre-gl";
 import {
   ChangeEvent,
   SetStateAction,
   useEffect,
   useRef,
   useState,
-} from 'react';
-import { Event } from 'three';
-import { Canvas, RootState, _roots } from '@react-three/fiber';
-import { IFCLoader } from 'web-ifc-three';
-import { IfcModel } from 'web-ifc-three/IFC/BaseDefinitions';
-import { IFCModel } from 'web-ifc-three/IFC/components/IFCModel';
+} from "react";
+import { Event } from "three";
+import { Canvas, RootState, _roots } from "@react-three/fiber";
+import { IFCLoader } from "web-ifc-three";
+import { IfcModel } from "web-ifc-three/IFC/BaseDefinitions";
+import { IFCModel } from "web-ifc-three/IFC/components/IFCModel";
 import {
   PerspectiveCamera,
   Scene,
@@ -22,26 +22,32 @@ import {
   WebGLRenderer,
   // Box3,
   AxesHelper,
-} from 'three';
-import { Stage, Sky, OrbitControls, Box } from '@react-three/drei';
-import { IFCManager } from 'web-ifc-three/IFC/components/IFCManager';
+} from "three";
+import {
+  Stage,
+  Sky,
+  OrbitControls,
+  Box,
+  EnvironmentMap,
+} from "@react-three/drei";
+import { IFCManager } from "web-ifc-three/IFC/components/IFCManager";
 import {
   acceleratedRaycast,
   computeBoundsTree,
   disposeBoundsTree,
-} from 'three-mesh-bvh';
-import * as THREE from 'three';
-import ThreeFiber from './components/ThreeFiber';
+} from "three-mesh-bvh";
+import * as THREE from "three";
+import ThreeFiber from "./components/ThreeFiber";
 
 export default function App() {
-  const [ifcUrl, setIfcUrl] = useState('');
+  const [ifcUrl, setIfcUrl] = useState("");
   // const [mapContainer, setMapContainer] = useState<mapboxgl.Map>();
   const [mapCanvas, setMapCanvas] = useState<HTMLCanvasElement>();
   const [glContext, setGlContext] = useState<WebGLRenderingContext>();
   const [matrixArray, setMatrixArray] = useState<Matrix4>();
-  const [matrix, setMatrix] = useState();
+  const [getGl, setGetGl] = useState();
   const [ifcModel, setIfcModel] = useState<IFCModel | null>(null);
-  const [url, setUrl] = useState('');
+  const [url, setUrl] = useState("");
   const [threeScene, setThreeScene] = useState<RootState>();
   const [mapState, setMapState] = useState(false);
   const [toggleCanvas, setToggleCanvas] = useState(false);
@@ -98,6 +104,11 @@ export default function App() {
       res({ m: a, l: b });
     });
   }
+
+  const foo = (callback) => {
+    const bar = callback();
+    setGetGl(bar);
+  };
 
   // const handleOnAdd = (map: mapboxgl.Map, gl: WebGLRenderingContext) => {
   //create three.js lights to illuminate the model
@@ -163,9 +174,10 @@ export default function App() {
   //     setToggleCanvas(true);
   //   });
   // };
+  let renderProcess;
   return (
     <div>
-      <input type='file' onChange={handleUpload} />
+      <input type="file" onChange={handleUpload} />
       {/* <Canvas
         gl={{
           canvas: mapContainer?.getCanvas(),
@@ -183,7 +195,7 @@ export default function App() {
         <sphereGeometry />
         </mesh>
       </Canvas> */}
-      <div className='h-screen w-screen'>
+      <div className="h-screen w-screen">
         <Map
           initialViewState={{
             longitude: 2.0283,
@@ -192,12 +204,24 @@ export default function App() {
             pitch: 90,
           }}
           mapLib={maplibregl}
-          mapStyle='https://api.maptiler.com/maps/basic-v2/style.json?key=ZDFWcNAeAKwpseiIpuuj'
+          mapStyle="https://api.maptiler.com/maps/basic-v2/style.json?key=ZDFWcNAeAKwpseiIpuuj"
         >
           <Layer
-            type='custom'
-            id='3d-building'
-            renderingMode='3d'
+            type="custom"
+            id="3d-building"
+            renderingMode="3d"
+            onAdd={(map: mapboxgl.Map, gl: WebGLRenderingContext) => {
+              console.log("I'm rendered first");
+              () => {
+                setGlContext(gl);
+              };
+              setupGlContext(map, gl).then((res) => {
+                const newCanvas = map.getCanvas();
+                setMapState(true);
+                setMapCanvas(newCanvas);
+                // setGlContext(gl);
+              });
+            }}
             render={(gl: WebGLRenderingContext, matrix: number[]) => {
               console.log("I'm rendered second");
               const rotationX = new Matrix4().makeRotationAxis(
@@ -232,32 +256,24 @@ export default function App() {
               // camera.projectionMatrix = m.multiply(l);
               // renderer.resetState();
               // renderer.render(scene, camera);
+              // renderProcess = (callback) => {
+              //   callback();
+              // };
               setupMatrix(m, l).then((matrix) => {
                 setMatrixArray(m.multiply(l));
                 setToggleCanvas(true);
-              });
-            }}
-            onAdd={(map: mapboxgl.Map, gl: WebGLRenderingContext) => {
-              console.log("I'm rendered first");
-              () => {
-                setGlContext(gl);
-              };
-              setupGlContext(map, gl).then((res) => {
-                const newCanvas = map.getCanvas();
-                setMapState(true);
-                setMapCanvas(newCanvas);
-                // setGlContext(gl);
               });
             }}
           />
         </Map>
         {matrixArray && (
           <Canvas
-            gl={{ canvas: mapCanvas, autoClear: false, context: glContext }}
+            gl={{ canvas: mapCanvas, context: glContext }}
             shadows
             // camera={{ projectionMatrix: matrixArray }}
           >
-            <ThreeFiber matrix={matrixArray} />
+            <EnvironmentMap background={"only"} />
+            <ThreeFiber matrix={matrixArray} context={renderProcess} />
             {/* <perspectiveCamera projectionMatrix={matrixArray} /> */}
             <axesHelper args={[10]} renderOrder={3} />
             <ambientLight intensity={0.5} />
