@@ -1,13 +1,13 @@
-import Map, { Layer, LngLatLike, Source } from 'react-map-gl';
-import maplibregl, { MercatorCoordinate } from 'maplibre-gl';
-import { Three } from './ThreeEnv';
-import { ChangeEvent, useEffect, useRef, useState } from 'react';
-import { Event } from 'three';
-import { Canvas } from '@react-three/fiber';
-import { IFCLoader } from 'web-ifc-three';
-import { IfcModel } from 'web-ifc-three/IFC/BaseDefinitions';
-import { IFCModel } from 'web-ifc-three/IFC/components/IFCModel';
-import ThreeFiber from './ThreeFiber';
+import Map, { Layer, LngLatLike, Source } from "react-map-gl";
+import maplibregl, { MercatorCoordinate } from "maplibre-gl";
+import { Three } from "./ThreeEnv";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
+import { Event } from "three";
+import { Canvas } from "@react-three/fiber";
+import { IFCLoader } from "web-ifc-three";
+import { IfcModel } from "web-ifc-three/IFC/BaseDefinitions";
+import { IFCModel } from "web-ifc-three/IFC/components/IFCModel";
+import ThreeFiber from "./ThreeFiber";
 import {
   PerspectiveCamera,
   Scene,
@@ -18,21 +18,21 @@ import {
   WebGLRenderer,
   // Box3,
   AxesHelper,
-} from 'three';
-import { OrbitControls } from '@react-three/drei';
-import { IFCManager } from 'web-ifc-three/IFC/components/IFCManager';
+} from "three";
+import { OrbitControls } from "@react-three/drei";
+import { IFCManager } from "web-ifc-three/IFC/components/IFCManager";
 import {
   acceleratedRaycast,
   computeBoundsTree,
   disposeBoundsTree,
-} from 'three-mesh-bvh';
+} from "three-mesh-bvh";
 
 function MapEnvironment() {
-  const [ifcUrl, setIfcUrl] = useState('');
+  const [ifcUrl, setIfcUrl] = useState("");
   const [mapContainer, setMapContainer] = useState();
   const [glContext, setGlContext] = useState();
   const [ifcModel, setIfcModel] = useState<IFCModel | null>(null);
-  const [url, setUrl] = useState('');
+  const [url, setUrl] = useState("");
 
   const ifcLoader = new IFCLoader();
   ifcLoader.ifcManager.setupThreeMeshBVH(
@@ -148,7 +148,7 @@ function MapEnvironment() {
 
   return (
     <>
-      <input type='file' onChange={handleUpload} />
+      <input type="file" onChange={handleUpload} />
       <Map
         initialViewState={{
           longitude: 2.0283,
@@ -160,12 +160,12 @@ function MapEnvironment() {
         //   map.target.addLayer(three);
         // }}
         mapLib={maplibregl}
-        mapStyle='https://api.maptiler.com/maps/basic-v2/style.json?key=ZDFWcNAeAKwpseiIpuuj'
+        mapStyle="https://api.maptiler.com/maps/basic-v2/style.json?key=ZDFWcNAeAKwpseiIpuuj"
       >
         <Layer
-          type='custom'
-          id='3d-building'
-          renderingMode='3d'
+          type="custom"
+          id="3d-building"
+          renderingMode="3d"
           onAdd={handleOnAdd}
           render={handleRender}
         />

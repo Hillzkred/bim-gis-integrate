@@ -1,30 +1,25 @@
 import { Canvas, useLoader, useThree } from "@react-three/fiber";
 import { forwardRef, useEffect } from "react";
-import { AxesHelper, Matrix } from "three";
+import { AxesHelper, Matrix, Matrix4 } from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { IFCLoader } from "web-ifc-three";
 import { PerspectiveCamera } from "three";
+import maplibreGl from "maplibre-gl";
+import { Layer, Map } from "react-map-gl";
+
 type Props = {
-  matrix?: Matrix;
-  context?: any;
+  matrix: Matrix4;
 };
 
-const ThreeFiber = ({ matrix, context }: Props) => {
+const ThreeFiber = ({ matrix }: Props) => {
   const { gl, camera, scene } = useThree();
-  // const axes = new AxesHelper(10);
-  // axes.renderOrder = 3;
-  // scene.add(axes);
 
-  // console.log('Fiber Rendered');
-  // gl.autoClear = false;
-  // context(() => {
-  //   console.log("processed");
-  // });
+  useEffect(() => {
+    camera.projectionMatrix = matrix;
+  });
 
-  camera.projectionMatrix = matrix;
-  gl.render(scene, camera);
   // gl.render(scene, camera);
-  gl.resetState();
+
   return null;
 };
 
