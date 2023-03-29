@@ -3,12 +3,12 @@ import maplibreGl, {
   CustomRenderMethod,
   LngLatLike,
   MercatorCoordinate,
-} from "maplibre-gl";
-import { useEffect, useState } from "react";
-import { Vector3, Matrix4 } from "three";
-import { AnyLayer } from "mapbox-gl";
+} from 'maplibre-gl';
+import { useEffect, useState } from 'react';
+import { Vector3, Matrix4 } from 'three';
+import { AnyLayer } from 'mapbox-gl';
 
-export const useMapLayer = () => {
+export const useCustomLayer = () => {
   // interface NewLayer {
   //   id: string;
   //   type: "custom";
@@ -16,7 +16,7 @@ export const useMapLayer = () => {
   //   onAdd: (map: maplibregl.Map, gl: WebGLRenderingContext) => void;
   //   render: CustomRenderMethod;
   // }
-  const [mapLayer, setCustomMapLayer] = useState<AnyLayer>();
+  const [customMapLayer, setCustomMapLayer] = useState<AnyLayer>();
   const [mapCanvas, setMapCanvas] = useState<HTMLCanvasElement>();
   const [glContext, setGlContext] = useState<WebGLRenderingContext>();
   const [matrixArray, setMatrixArray] = useState<Matrix4>();
@@ -50,9 +50,9 @@ export const useMapLayer = () => {
 
   useEffect(() => {
     const customLayer: mapboxgl.AnyLayer = {
-      type: "custom",
-      id: "3d-building",
-      renderingMode: "3d",
+      type: 'custom',
+      id: '3d-building',
+      renderingMode: '3d',
       onAdd: (map: mapboxgl.Map, gl: WebGLRenderingContext) => {
         console.log("I'm rendered first");
         const newCanvas = map.getCanvas();
@@ -95,5 +95,5 @@ export const useMapLayer = () => {
     setCustomMapLayer(customLayer);
   }, []);
 
-  return { mapLayer, glContext, mapCanvas, matrixArray };
+  return { customMapLayer, glContext, mapCanvas, matrixArray };
 };
