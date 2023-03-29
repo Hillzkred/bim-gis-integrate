@@ -21,7 +21,7 @@ export const useCustomLayer = () => {
   const [glContext, setGlContext] = useState<WebGLRenderingContext>();
   const [matrixArray, setMatrixArray] = useState<Matrix4>();
 
-  interface ModelTranslation {
+  interface ModelTransform {
     translateX: number;
     translateY: number;
     translateZ: number;
@@ -38,7 +38,7 @@ export const useCustomLayer = () => {
   const modelAsMercatorCoordinate: MercatorCoordinate =
     maplibreGl.MercatorCoordinate.fromLngLat(modelOrigin, modelAltitude);
 
-  const modelTransform: ModelTranslation = {
+  const modelTransform: ModelTransform = {
     translateX: modelAsMercatorCoordinate.x,
     translateY: modelAsMercatorCoordinate.y,
     translateZ: modelAsMercatorCoordinate.z,
