@@ -95,9 +95,9 @@ function MapEnvironment() {
     directionalLight2.position.set(0, 700, 600).normalize();
     scene.add(directionalLight2);
 
-    // ifcLoader.load('/sample.ifc', (model) => {
-    //   scene.add(model);
-    // });
+    ifcLoader.load('/sample.ifc', (model) => {
+      scene.add(model);
+    });
 
     renderer = new WebGLRenderer({
       canvas: map.getCanvas(),

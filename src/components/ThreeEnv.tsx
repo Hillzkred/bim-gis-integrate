@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 
 import {
   PerspectiveCamera,
@@ -10,13 +10,13 @@ import {
   WebGLRenderer,
   // Box3,
   AxesHelper,
-} from "three";
+} from 'three';
 
-import maplibregl, { LngLatLike, MercatorCoordinate } from "maplibre-gl";
-import "maplibre-gl/dist/maplibre-gl.css";
+import maplibregl, { LngLatLike, MercatorCoordinate } from 'maplibre-gl';
+import 'maplibre-gl/dist/maplibre-gl.css';
 
-import { IFCLoader } from "web-ifc-three";
-import { IfcModel } from "web-ifc-three/IFC/BaseDefinitions";
+import { IFCLoader } from 'web-ifc-three';
+import { IfcModel } from 'web-ifc-three/IFC/BaseDefinitions';
 
 export const Three = () => {
   const [_customLayer, setCustomlayer]: any = useState(null);
@@ -39,9 +39,9 @@ export const Three = () => {
     };
 
     const customLayer: any = {
-      id: "3d-model",
-      type: "custom",
-      renderingMode: "3d",
+      id: '3d-model',
+      type: 'custom',
+      renderingMode: '3d',
       onAdd: function (map: any, gl: any) {
         this.camera = new PerspectiveCamera();
         this.scene = new Scene();
@@ -65,8 +65,8 @@ export const Three = () => {
 
         const ifcLoader = new IFCLoader();
 
-        ifcLoader.ifcManager.setWasmPath("/");
-        ifcLoader.load("/sample.ifc", (model) => {
+        ifcLoader.ifcManager.setWasmPath('/');
+        ifcLoader.load('/sample.ifc', (model) => {
           this.scene.add(model);
         });
 
